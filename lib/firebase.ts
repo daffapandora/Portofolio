@@ -4,7 +4,6 @@ import { getFirestore, Firestore } from "firebase/firestore";
 import { getStorage, FirebaseStorage } from "firebase/storage";
 import { getAnalytics, Analytics, isSupported } from "firebase/analytics";
 
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAMGm3iCLN3WXa0VYyGFX9mNg0wMa-FmBU",
   authDomain: "tugas-rn-pbp.firebaseapp.com",
