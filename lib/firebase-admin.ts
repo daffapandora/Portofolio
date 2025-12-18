@@ -4,36 +4,27 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 import { getStorage, Storage } from "firebase-admin/storage";
 
 // Initialize Firebase Admin SDK for server-side operations
-let adminApp: App;
-let adminAuth: Auth;
-let adminDb: Firestore;
-let adminStorage: Storage;
-
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
 };
 
-if (!getApps().length) {
-  adminApp = initializeApp({
-    credential: cert(serviceAccount as Parameters<typeof cert>[0]),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  });
-} else {
-  adminApp = getApps()[0];
-}
+const adminApp: App = getApps().length ? getApps()[0] : initializeApp({
+  credential: cert(serviceAccount as Parameters<typeof cert>[0]),
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+});
 
-adminAuth = getAuth(adminApp);
-adminDb = getFirestore(adminApp);
-adminStorage = getStorage(adminApp);
+const auth: Auth = getAuth(adminApp);
+const db: Firestore = getFirestore(adminApp);
+const storage: Storage = getStorage(adminApp);
 
-export { adminApp, adminAuth, adminDb, adminStorage };
+export { adminApp, auth as adminAuth, db as adminDb, storage as adminStorage };
 
 // Server-side helper functions
 export async function verifyIdToken(token: string) {
   try {
-    const decodedToken = await adminAuth.verifyIdToken(token);
+    const decodedToken = await auth.verifyIdToken(token);
     return decodedToken;
   } catch (error) {
     console.error("Error verifying token:", error);
@@ -43,7 +34,7 @@ export async function verifyIdToken(token: string) {
 
 export async function isAdmin(uid: string): Promise<boolean> {
   try {
-    const user = await adminAuth.getUser(uid);
+    const user = await auth.getUser(uid);
     return user.customClaims?.admin === true;
   } catch (error) {
     console.error("Error checking admin status:", error);
@@ -52,5 +43,5 @@ export async function isAdmin(uid: string): Promise<boolean> {
 }
 
 export async function setAdminRole(uid: string): Promise<void> {
-  await adminAuth.setCustomUserClaims(uid, { admin: true });
+  await auth.setCustomUserClaims(uid, { admin: true });
 }

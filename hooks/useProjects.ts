@@ -81,6 +81,7 @@ export function useProjects(options: UseProjectsOptions = {}): UseProjectsReturn
   }, [options.category, options.status, options.featured, options.orderByField, options.orderDirection]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState is called in Firestore onSnapshot callback, not synchronously
     const unsubscribe = fetchProjects();
     return () => unsubscribe();
   }, [fetchProjects]);
@@ -95,6 +96,7 @@ export function useProject(id: string | null) {
 
   useEffect(() => {
     if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Early return for null id is intentional
       setProject(null);
       setLoading(false);
       return;
@@ -104,7 +106,7 @@ export function useProject(id: string | null) {
     setError(null);
 
     const docRef = doc(db, COLLECTIONS.PROJECTS, id);
-    
+
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot) => {

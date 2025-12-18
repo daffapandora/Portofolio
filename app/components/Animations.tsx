@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 // Page transition wrapper
 interface PageTransitionProps {
@@ -148,7 +148,8 @@ const itemVariants: Variants = {
   },
 };
 
-export function StaggerContainer({ children, staggerDelay = 0.1, className = "" }: StaggerContainerProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function StaggerContainer({ children, staggerDelay: _staggerDelay = 0.1, className = "" }: StaggerContainerProps) {
   return (
     <motion.div
       variants={containerVariants}
@@ -365,7 +366,8 @@ interface CounterProps {
   className?: string;
 }
 
-export function Counter({ from = 0, to, duration = 2, className = "" }: CounterProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function Counter({ from: _from = 0, to, duration: _duration = 2, className = "" }: CounterProps) {
   return (
     <motion.span
       className={className}

@@ -1,18 +1,19 @@
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useSyncExternalStore } from "react";
 
 interface ThemeProviderProps {
   children: ReactNode;
 }
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [mounted, setMounted] = useState(false);
+// Hydration-safe mounting detection using useSyncExternalStore
+const emptySubscribe = () => () => { };
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  const mounted = useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
 
   if (!mounted) {
     return <>{children}</>;

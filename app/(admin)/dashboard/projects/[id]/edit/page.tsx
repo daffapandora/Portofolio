@@ -23,7 +23,7 @@ import {
   Plus,
 } from "lucide-react";
 import { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
-import { db, COLLECTIONS, Project, ProjectLink as FirebaseProjectLink } from "@/lib/firebase";
+import { db, COLLECTIONS, Project } from "@/lib/firebase";
 
 // Link types configuration
 const linkTypes = [
@@ -81,6 +81,7 @@ export default function EditProjectPage() {
   const [loading, setLoading] = useState(true);
   const [techStack, setTechStack] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -130,7 +131,7 @@ export default function EditProjectPage() {
           });
           setTechStack(data.techStack || []);
           setExistingImages(data.images || (data.imageUrl ? [data.imageUrl] : []));
-          
+
           // Load existing links or convert from old format
           if (data.links && Array.isArray(data.links)) {
             setProjectLinks(data.links);
@@ -185,7 +186,7 @@ export default function EditProjectPage() {
           }
 
           ctx.drawImage(img, 0, 0, width, height);
-          
+
           // Convert to base64 with compression
           const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
           resolve(compressedBase64);
@@ -204,6 +205,7 @@ export default function EditProjectPage() {
       (file) => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024
     );
     addImages(files);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,7 +217,7 @@ export default function EditProjectPage() {
 
   const addImages = async (files: File[]) => {
     setNewImages((prev) => [...prev, ...files]);
-    
+
     for (const file of files) {
       try {
         // Compress the image before storing
@@ -274,7 +276,7 @@ export default function EditProjectPage() {
 
       // Filter out empty links
       const validLinks = projectLinks.filter(link => link.url.trim() !== "");
-      
+
       // For backward compatibility, extract github and demo URLs
       const githubLink = validLinks.find(link => link.type === "github");
       const demoLink = validLinks.find(link => link.type === "demo");
@@ -368,11 +370,10 @@ export default function EditProjectPage() {
             <input
               type="text"
               {...register("title")}
-              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.title
-                  ? "border-red-500"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title
+                ? "border-red-500"
+                : "border-gray-300 dark:border-gray-600"
+                }`}
               placeholder="Project title"
             />
             {errors.title && (
@@ -388,11 +389,10 @@ export default function EditProjectPage() {
             <textarea
               {...register("description")}
               rows={3}
-              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.description
-                  ? "border-red-500"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description
+                ? "border-red-500"
+                : "border-gray-300 dark:border-gray-600"
+                }`}
               placeholder="Brief description of the project"
             />
             {errors.description && (
@@ -423,11 +423,10 @@ export default function EditProjectPage() {
               </label>
               <select
                 {...register("category")}
-                className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.category
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category
+                  ? "border-red-500"
+                  : "border-gray-300 dark:border-gray-600"
+                  }`}
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -575,7 +574,7 @@ export default function EditProjectPage() {
               {projectLinks.map((link, index) => {
                 const linkConfig = linkTypes.find(lt => lt.id === link.type) || linkTypes[linkTypes.length - 1];
                 const IconComponent = linkConfig.icon;
-                
+
                 return (
                   <div key={index} className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <div className="flex-1 space-y-3">
@@ -593,7 +592,7 @@ export default function EditProjectPage() {
                         </select>
                         <IconComponent className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                       </div>
-                      
+
                       <input
                         type="url"
                         value={link.url}
@@ -601,7 +600,7 @@ export default function EditProjectPage() {
                         className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder={linkConfig.placeholder}
                       />
-                      
+
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
@@ -614,7 +613,7 @@ export default function EditProjectPage() {
                         </span>
                       </label>
                     </div>
-                    
+
                     <button
                       type="button"
                       onClick={() => removeLink(index)}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { collection, addDoc, getDocs, query } from "firebase/firestore";
 import { db, COLLECTIONS } from "@/lib/firebase";
 import { motion } from "framer-motion";
-import { Database, Upload, Check, Loader2, ArrowLeft, Trash2 } from "lucide-react";
+import { Database, Upload, Check, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 const initialProjects = [
@@ -147,7 +147,7 @@ export default function SeedProjectsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0F172A] to-[#1E293B] p-8">
+    <div className="min-h-screen bg-linear-to-br from-[#0F172A] to-[#1E293B] p-8">
       <div className="max-w-2xl mx-auto">
         <Link
           href="/dashboard/projects"
@@ -163,7 +163,7 @@ export default function SeedProjectsPage() {
           className="bg-[#1E293B] rounded-2xl p-8 shadow-xl border border-gray-700"
         >
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-[#6c757d] to-[#495057] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-xl bg-linear-to-r from-[#6c757d] to-[#495057] flex items-center justify-center">
               <Database className="w-7 h-7 text-white" />
             </div>
             <div>
@@ -217,7 +217,7 @@ export default function SeedProjectsPage() {
           <button
             onClick={seedProjects}
             disabled={loading}
-            className="w-full py-4 bg-gradient-to-r from-[#6c757d] to-[#495057] text-white font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-4 bg-linear-to-r from-[#6c757d] to-[#495057] text-white font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? (
               <>

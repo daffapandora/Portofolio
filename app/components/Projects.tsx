@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Github, ExternalLink, Search, Filter, Loader2, Youtube, Figma, FileText, Play, Globe } from "lucide-react";
+import { Github, ExternalLink, Search, Filter, Youtube, Figma, FileText, Play, Globe, Eye } from "lucide-react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db, COLLECTIONS, Project as FirebaseProject, ProjectLink } from "@/lib/firebase";
+import Link from "next/link";
 
 // Link icon mapping
 const linkIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -72,19 +73,19 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group relative bg-[var(--background)] rounded-2xl overflow-hidden border border-[var(--border)] hover:border-[#6c757d]/50 transition-all duration-300 hover:shadow-xl hover:shadow-[#6c757d]/10"
+      className="group relative bg-background rounded-2xl overflow-hidden border border-[var(--border)] hover:border-foreground/30 transition-all duration-300 hover:shadow-xl hover:shadow-foreground/10"
     >
       {/* Featured Badge */}
       {project.featured && (
-        <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-gradient-to-r from-[#6c757d] to-[#495057] text-white text-xs font-semibold rounded-full">
+        <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-foreground text-background text-xs font-semibold rounded-full">
           Featured
         </div>
       )}
 
       {/* Image */}
       <div className="relative aspect-video overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#6c757d]/20 to-[#495057]/20" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="absolute inset-0 bg-gradient-to-br from-foreground/10 to-foreground/5" />
+        { }
         <img
           src={project.image}
           alt={project.title}
@@ -95,15 +96,24 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           }}
         />
         {/* Fallback gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#6c757d] to-[#495057] flex items-center justify-center -z-10">
-          <span className="text-4xl font-bold text-white/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-foreground/30 to-foreground/20 flex items-center justify-center -z-10">
+          <span className="text-4xl font-bold text-foreground/30">
             {project.title.substring(0, 2).toUpperCase()}
           </span>
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
           <div className="flex gap-3 flex-wrap justify-center">
+            {/* View Details Button */}
+            <Link
+              href={`/project/${project.id}`}
+              className="p-3 bg-white/30 backdrop-blur-sm rounded-full text-white hover:bg-white/40 transition-colors"
+              title="View Details"
+            >
+              <Eye className="w-5 h-5" />
+            </Link>
+
             {/* Render links from new links array (visible only) */}
             {project.links && project.links.length > 0 ? (
               project.links
@@ -163,7 +173,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       {/* Content */}
       <div className="p-6">
         <div className="flex items-start justify-between mb-2">
-          <h3 className="text-lg font-bold group-hover:text-[#6c757d] transition-colors">
+          <h3 className="text-lg font-bold group-hover:text-foreground/70 transition-colors">
             {project.title}
           </h3>
           <span className="text-xs text-[var(--text-muted)]">{project.date}</span>
@@ -178,9 +188,8 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           {project.tech.slice(0, 4).map((tech) => (
             <span
               key={tech}
-              className={`px-2 py-1 text-xs font-medium rounded-md ${
-                techColors[tech] || "bg-[#6c757d]/20 text-[#6c757d]"
-              }`}
+              className={`px-2 py-1 text-xs font-medium rounded-md ${techColors[tech] || "bg-foreground/10 text-foreground"
+                }`}
             >
               {tech}
             </span>
@@ -198,7 +207,14 @@ export default function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(6);
   const [projects, setProjects] = useState<Project[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted to fix hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch projects from Firebase
   useEffect(() => {
@@ -210,7 +226,7 @@ export default function Projects() {
           orderBy("createdAt", "desc")
         );
         const snapshot = await getDocs(q);
-        
+
         if (!snapshot.empty) {
           const firebaseProjects: Project[] = snapshot.docs
             .map((doc) => {
@@ -223,7 +239,7 @@ export default function Projects() {
                 "IoT": "iot",
                 "Other": "web",
               };
-              
+
               return {
                 id: doc.id,
                 title: data.title,
@@ -241,7 +257,7 @@ export default function Projects() {
             })
             // Filter published projects client-side
             .filter((project) => project.status === "published");
-          
+
           if (firebaseProjects.length > 0) {
             setProjects(firebaseProjects);
           }
@@ -276,8 +292,8 @@ export default function Projects() {
     <section id="projects" ref={ref} className="section-padding relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#6c757d]/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#495057]/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-foreground/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-foreground/5 rounded-full blur-3xl" />
       </div>
 
       <div className="container-custom">
@@ -288,10 +304,10 @@ export default function Projects() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold bbh-bartle-regular tracking-tight mb-4">
             My <span className="gradient-text">Projects</span>
           </h2>
-          <p className="text-[var(--text-muted)] max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
             A collection of projects I&apos;ve worked on, showcasing my skills in
             web development, mobile apps, IoT, and machine learning.
           </p>
@@ -302,23 +318,28 @@ export default function Projects() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-col sm:flex-row gap-4 mb-8"
+          className="flex flex-col gap-4 mb-8"
         >
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
-            <input
-              type="text"
-              placeholder="Search projects..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-[var(--background-secondary)] border border-[var(--border)] focus:border-[#6c757d] focus:outline-none transition-colors"
-            />
+          {/* Search Input - full width on mobile */}
+          <div className="relative w-full sm:w-auto sm:max-w-xs">
+            {mounted && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full border-none outline-none rounded-full py-3 pl-11 pr-4 text-sm bg-[var(--background-secondary)] placeholder:text-[var(--text-muted)] focus:ring-2 focus:ring-foreground/20 transition-all"
+                  suppressHydrationWarning
+                />
+                <Search className="absolute top-1/2 left-4 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
+              </>
+            )}
           </div>
 
-          {/* Category Filter */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-            <Filter className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" />
+          {/* Category Filter - scrollable on mobile */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 -mx-2 px-2 scrollbar-hide">
+            <Filter className="w-5 h-5 text-[var(--text-muted)] shrink-0" />
             {categories.map((category) => (
               <button
                 key={category.value}
@@ -326,11 +347,10 @@ export default function Projects() {
                   setActiveCategory(category.value);
                   setVisibleCount(6);
                 }}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 ${
-                  activeCategory === category.value
-                    ? "bg-gradient-to-r from-[#6c757d] to-[#495057] text-white"
-                    : "bg-[var(--background-secondary)] text-[var(--text-muted)] hover:text-[var(--foreground)]"
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 ${activeCategory === category.value
+                  ? "bg-foreground text-background"
+                  : "bg-[var(--background-secondary)] text-[var(--text-muted)] hover:text-foreground"
+                  }`}
               >
                 {category.label}
               </button>
@@ -370,7 +390,7 @@ export default function Projects() {
           >
             <motion.button
               onClick={() => setVisibleCount((prev) => prev + 6)}
-              className="px-8 py-3 border-2 border-[#6c757d] text-[#6c757d] font-semibold rounded-lg hover:bg-[#6c757d]/10 transition-all duration-300"
+              className="px-8 py-3 border-2 border-foreground text-foreground font-semibold rounded-lg hover:bg-foreground/10 transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

@@ -70,10 +70,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        {/* BBH Bartle Font */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=BBH+Bartle&display=swap" rel="stylesheet" />
         {/* Analytics placeholder */}
         {/* <script async src="https://www.googletagmanager.com/gtag/js?id=YOUR_GA_ID"></script> */}
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>

@@ -2,20 +2,18 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Plus,
   Search,
-  Filter,
   Edit,
   Trash2,
   ExternalLink,
   Github,
-  MoreHorizontal,
   ChevronLeft,
   ChevronRight,
   Database,
+  Loader2,
 } from "lucide-react";
 import {
   collection,
@@ -24,9 +22,9 @@ import {
   doc,
   query,
   orderBy,
-  where,
 } from "firebase/firestore";
 import { db, COLLECTIONS, Project } from "@/lib/firebase";
+import toast from "react-hot-toast";
 
 const categories = ["All", "Web", "Mobile", "IoT", "Machine Learning", "Other"];
 const statuses = ["All", "Published", "Draft"];
@@ -41,6 +39,8 @@ export default function ProjectsPage() {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [bulkDeleteModalOpen, setBulkDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -101,25 +101,36 @@ export default function ProjectsPage() {
   };
 
   const handleDelete = async (id: string) => {
+    setDeleting(true);
     try {
       await deleteDoc(doc(db, COLLECTIONS.PROJECTS, id));
       setProjects(projects.filter((p) => p.id !== id));
       setDeleteModalOpen(false);
       setProjectToDelete(null);
+      toast.success("Project deleted successfully");
     } catch (error) {
       console.error("Error deleting project:", error);
+      toast.error("Failed to delete project");
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleBulkDelete = async () => {
+    setDeleting(true);
     try {
       await Promise.all(
         selectedProjects.map((id) => deleteDoc(doc(db, COLLECTIONS.PROJECTS, id)))
       );
       setProjects(projects.filter((p) => !selectedProjects.includes(p.id!)));
       setSelectedProjects([]);
+      setBulkDeleteModalOpen(false);
+      toast.success(`${selectedProjects.length} projects deleted successfully`);
     } catch (error) {
       console.error("Error bulk deleting projects:", error);
+      toast.error("Failed to delete projects");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -222,8 +233,8 @@ export default function ProjectsPage() {
               {selectedProjects.length} selected
             </span>
             <button
-              onClick={handleBulkDelete}
-              className="flex items-center gap-2 px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              onClick={() => setBulkDeleteModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
             >
               <Trash2 className="h-4 w-4" />
               Delete Selected
@@ -320,11 +331,10 @@ export default function ProjectsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        project.status === "published"
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                          : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
-                      }`}
+                      className={`px-2 py-1 text-xs rounded-full ${project.status === "published"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                        : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
+                        }`}
                     >
                       {project.status}
                     </span>
@@ -408,11 +418,10 @@ export default function ProjectsPage() {
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-lg text-sm ${
-                    currentPage === page
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+                  className={`w-8 h-8 rounded-lg text-sm ${currentPage === page
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                 >
                   {page}
                 </button>
@@ -435,12 +444,12 @@ export default function ProjectsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4"
+            className="bg-background border border-[var(--border)] rounded-xl p-6 max-w-md mx-4"
           >
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               Delete Project
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-[var(--text-muted)] mb-6">
               Are you sure you want to delete this project? This action cannot be
               undone.
             </p>
@@ -450,15 +459,51 @@ export default function ProjectsPage() {
                   setDeleteModalOpen(false);
                   setProjectToDelete(null);
                 }}
-                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="px-4 py-2 text-[var(--text-muted)] hover:bg-[var(--background-secondary)] rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => projectToDelete && handleDelete(projectToDelete)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                disabled={deleting}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
+                {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
                 Delete
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {bulkDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-background border border-[var(--border)] rounded-xl p-6 max-w-md mx-4"
+          >
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              Delete {selectedProjects.length} Projects
+            </h3>
+            <p className="text-[var(--text-muted)] mb-6">
+              Are you sure you want to delete {selectedProjects.length} projects? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setBulkDeleteModalOpen(false)}
+                className="px-4 py-2 text-[var(--text-muted)] hover:bg-[var(--background-secondary)] rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting && <Loader2 className="h-4 w-4 animate-spin" />}
+                Delete All
               </button>
             </div>
           </motion.div>

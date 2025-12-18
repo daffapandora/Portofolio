@@ -75,6 +75,7 @@ const techOptions = [
 export default function AddProjectPage() {
   const router = useRouter();
   const [techStack, setTechStack] = useState<string[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [images, setImages] = useState<File[]>([]);
   const [imagePreview, setImagePreview] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -147,7 +148,7 @@ export default function AddProjectPage() {
           }
 
           ctx.drawImage(img, 0, 0, width, height);
-          
+
           // Convert to base64 with compression
           const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
           resolve(compressedBase64);
@@ -166,6 +167,7 @@ export default function AddProjectPage() {
       (file) => file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024
     );
     addImages(files);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,7 +179,7 @@ export default function AddProjectPage() {
 
   const addImages = async (files: File[]) => {
     setImages((prev) => [...prev, ...files]);
-    
+
     for (const file of files) {
       try {
         // Compress the image before storing
@@ -228,10 +230,10 @@ export default function AddProjectPage() {
     try {
       // Get base64 images
       const imageBase64 = convertImagesToBase64();
-      
+
       // Filter out empty links and prepare links data
       const validLinks = projectLinks.filter(link => link.url.trim() !== "");
-      
+
       // Extract github and demo URLs for backward compatibility
       const githubLink = validLinks.find(l => l.type === "github");
       const demoLink = validLinks.find(l => l.type === "demo");
@@ -261,10 +263,10 @@ export default function AddProjectPage() {
     try {
       // Get base64 images
       const imageBase64 = convertImagesToBase64();
-      
+
       // Filter out empty links and prepare links data
       const validLinks = projectLinks.filter(link => link.url.trim() !== "");
-      
+
       // Extract github and demo URLs for backward compatibility
       const githubLink = validLinks.find(l => l.type === "github");
       const demoLink = validLinks.find(l => l.type === "demo");
@@ -331,11 +333,10 @@ export default function AddProjectPage() {
             <input
               type="text"
               {...register("title")}
-              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.title
-                  ? "border-red-500"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.title
+                ? "border-red-500"
+                : "border-gray-300 dark:border-gray-600"
+                }`}
               placeholder="Project title"
             />
             {errors.title && (
@@ -351,11 +352,10 @@ export default function AddProjectPage() {
             <textarea
               {...register("description")}
               rows={3}
-              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.description
-                  ? "border-red-500"
-                  : "border-gray-300 dark:border-gray-600"
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.description
+                ? "border-red-500"
+                : "border-gray-300 dark:border-gray-600"
+                }`}
               placeholder="Brief description of the project"
             />
             {errors.description && (
@@ -386,11 +386,10 @@ export default function AddProjectPage() {
               </label>
               <select
                 {...register("category")}
-                className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.category
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category
+                  ? "border-red-500"
+                  : "border-gray-300 dark:border-gray-600"
+                  }`}
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -538,19 +537,19 @@ export default function AddProjectPage() {
               const linkTypeConfig = linkTypes.find(t => t.id === link.type);
               const IconComponent = linkTypeConfig?.icon || ExternalLink;
               const usedTypes = projectLinks.map(l => l.type);
-              
+
               return (
                 <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   {/* Link Type Selector */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <select
                       value={link.type}
                       onChange={(e) => updateLink(index, "type", e.target.value)}
                       className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {linkTypes.map((type) => (
-                        <option 
-                          key={type.id} 
+                        <option
+                          key={type.id}
                           value={type.id}
                           disabled={usedTypes.includes(type.id) && type.id !== link.type}
                         >
@@ -583,7 +582,7 @@ export default function AddProjectPage() {
                         onChange={(e) => updateLink(index, "visible", e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                       <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Show</span>
                     </label>
                   </div>
@@ -599,7 +598,7 @@ export default function AddProjectPage() {
                 </div>
               );
             })}
-            
+
             {projectLinks.length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <ExternalLink className="h-8 w-8 mx-auto mb-2 opacity-50" />

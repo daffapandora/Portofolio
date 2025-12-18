@@ -1,28 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const navLinks = [
-  { name: "Home", href: "#home" },
   { name: "About", href: "#about" },
+  { name: "Experience", href: "#experience" },
   { name: "Projects", href: "#projects" },
   { name: "Skills", href: "#skills" },
   { name: "Contact", href: "#contact" },
 ];
+
+// Hydration-safe mounting detection
+const emptySubscribe = () => () => { };
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
 
   // Handle scroll effect
   useEffect(() => {
@@ -96,13 +97,12 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-300 ${
-          isScrolled
-            ? "glass shadow-lg"
-            : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+          ? "bg-background/80 backdrop-blur-md border-b border-[var(--border)]/20"
+          : "bg-transparent"
+          }`}
       >
-        <nav className="h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <nav className="h-16 max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
           <motion.a
             href="#home"
@@ -110,17 +110,16 @@ export default function Navbar() {
               e.preventDefault();
               handleNavClick("#home");
             }}
-            className="flex items-center gap-1 text-xl font-bold"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            className="text-sm font-light tracking-wider text-foreground/90 hover:text-foreground transition-colors"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            <span className="text-[#6c757d]">Daffa</span>
-            <span className="text-[var(--foreground)]">Pandora</span>
+            DAFFA PANDORA
           </motion.a>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <ul className="flex items-center gap-6">
+            <ul className="flex items-center gap-8">
               {navLinks.map((link) => (
                 <li key={link.name}>
                   <a
@@ -129,17 +128,16 @@ export default function Navbar() {
                       e.preventDefault();
                       handleNavClick(link.href);
                     }}
-                    className={`relative py-2 text-base font-semibold transition-colors duration-300 ${
-                      activeSection === link.href.substring(1)
-                        ? "text-[#6c757d]"
-                        : "text-[var(--foreground)] opacity-80 hover:opacity-100 hover:text-[#6c757d]"
-                    }`}
+                    className={`relative text-xs font-light tracking-wider uppercase transition-colors duration-300 ${activeSection === link.href.substring(1)
+                      ? "text-foreground"
+                      : "text-[var(--text-muted)] hover:text-foreground/80"
+                      }`}
                   >
                     {link.name}
                     {activeSection === link.href.substring(1) && (
                       <motion.span
                         layoutId="activeSection"
-                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#6c757d] rounded-full"
+                        className="absolute -bottom-1 left-0 right-0 h-px bg-foreground"
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
                       />
                     )}
@@ -152,13 +150,13 @@ export default function Navbar() {
             {mounted && (
               <button
                 onClick={toggleTheme}
-                className="p-2.5 rounded-xl bg-[var(--foreground)] hover:opacity-80 transition-opacity duration-300"
+                className="p-2 text-[var(--text-muted)] hover:text-foreground transition-colors duration-300"
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? (
-                  <Sun className="w-5 h-5 text-[var(--background)]" />
+                  <Sun className="w-4 h-4" />
                 ) : (
-                  <Moon className="w-5 h-5 text-[var(--background)]" />
+                  <Moon className="w-4 h-4" />
                 )}
               </button>
             )}
@@ -169,19 +167,19 @@ export default function Navbar() {
             {mounted && (
               <button
                 onClick={toggleTheme}
-                className="p-2.5 rounded-xl bg-[var(--foreground)] hover:opacity-80 transition-opacity duration-300"
+                className="p-2.5 rounded-xl bg-foreground hover:opacity-80 transition-opacity duration-300"
                 aria-label="Toggle theme"
               >
                 {theme === "dark" ? (
-                  <Sun className="w-5 h-5 text-[var(--background)]" />
+                  <Sun className="w-5 h-5 text-background" />
                 ) : (
-                  <Moon className="w-5 h-5 text-[var(--background)]" />
+                  <Moon className="w-5 h-5 text-background" />
                 )}
               </button>
             )}
             <motion.button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg bg-[var(--background-secondary)] hover:bg-[var(--border)] transition-colors duration-300"
+              className="p-2 rounded-lg bg-(--background-secondary) hover:bg-(--border) transition-colors duration-300"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Toggle menu"
@@ -216,18 +214,18 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-72 bg-[var(--background)] z-50 md:hidden shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 w-72 bg-background z-50 md:hidden shadow-2xl"
             >
               <div className="flex flex-col h-full">
                 {/* Menu Header */}
-                <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+                <div className="flex items-center justify-between p-4 border-b border-(--border)">
                   <span className="text-lg font-bold">
-                    <span className="text-[#6c757d]">Daffa</span>
-                    <span className="text-[var(--foreground)]">Pandora</span>
+                    <span className="text-[var(--text-muted)]">Daffa</span>
+                    <span className="text-foreground">Pandora</span>
                   </span>
                   <motion.button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 rounded-lg hover:bg-[var(--background-secondary)] transition-colors"
+                    className="p-2 rounded-lg hover:bg-(--background-secondary) transition-colors"
                     whileTap={{ scale: 0.9 }}
                   >
                     <X className="w-6 h-6" />
@@ -250,11 +248,10 @@ export default function Navbar() {
                             e.preventDefault();
                             handleNavClick(link.href);
                           }}
-                          className={`block py-3 px-4 rounded-lg text-lg font-medium transition-all duration-300 ${
-                            activeSection === link.href.substring(1)
-                              ? "bg-[#6c757d] text-white"
-                              : "text-[var(--foreground)] hover:bg-[var(--background-secondary)]"
-                          }`}
+                          className={`block py-3 px-4 rounded-lg text-lg font-medium transition-all duration-300 ${activeSection === link.href.substring(1)
+                            ? "bg-[var(--primary)] text-white"
+                            : "text-foreground hover:bg-[var(--background-secondary)]"
+                            }`}
                         >
                           {link.name}
                         </a>
@@ -264,8 +261,8 @@ export default function Navbar() {
                 </nav>
 
                 {/* Menu Footer */}
-                <div className="p-4 border-t border-[var(--border)]">
-                  <p className="text-sm text-[var(--text-muted)] text-center">
+                <div className="p-4 border-t border-(--border)">
+                  <p className="text-sm text-(--text-muted) text-center">
                     © 2025 Daffa Pandora
                   </p>
                 </div>

@@ -15,21 +15,11 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase (prevent multiple instances)
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-let storage: FirebaseStorage;
+const app: FirebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
+const storage: FirebaseStorage = getStorage(app);
 let analytics: Analytics | null = null;
-
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
-
-auth = getAuth(app);
-db = getFirestore(app);
-storage = getStorage(app);
 
 // Initialize analytics only on client side
 if (typeof window !== "undefined") {
@@ -49,6 +39,8 @@ export const COLLECTIONS = {
   MESSAGES: "messages",
   ANALYTICS: "analytics",
   SETTINGS: "settings",
+  EXPERIENCES: "experiences",
+  CERTIFICATIONS: "certifications",
 } as const;
 
 // Settings document ID
@@ -56,12 +48,32 @@ export const SETTINGS_DOC_ID = "profile";
 
 // Type definitions for Firestore documents
 export interface ProfileSettings {
+  // Basic info
   displayName: string;
   title: string;
   location: string;
-  bio: string;
+
+  // Hero section
+  heroTagline?: string; // e.g., "Full Stack Developer | UI/UX Enthusiast"
+  heroDescription?: string; // Brief intro text
   heroImage?: string; // base64 image for hero section
+
+  // About section
   aboutImage?: string; // base64 image for about section
+  bio: string; // Main bio paragraph
+  bioExtended?: string; // Second paragraph
+  bioPassion?: string; // Third paragraph about passion
+
+  // Education
+  education?: {
+    degree: string;
+    university: string;
+    period: string;
+    gpa?: string;
+    coursework: string[];
+  };
+
+  // Social links
   socialLinks: {
     github?: string;
     linkedin?: string;
@@ -69,6 +81,10 @@ export interface ProfileSettings {
     twitter?: string;
     instagram?: string;
   };
+
+  // CV/Resume link
+  cvUrl?: string;
+
   updatedAt: Date;
 }
 
@@ -115,8 +131,37 @@ export interface Message {
   createdAt: Date;
 }
 
+export interface Experience {
+  id?: string;
+  position: string;
+  type: "Magang" | "Full-time" | "Part-time" | "Freelance" | "Contract";
+  company: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  description: string;
+  skills: string[];
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Certificate {
+  id?: string;
+  name: string;
+  issuer: string;
+  imageUrl: string;
+  credentialUrl?: string;
+  issueDate?: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface AnalyticsData {
   pageViews: number;
   projectViews: { [projectId: string]: number };
   lastUpdated: Date;
 }
+
+

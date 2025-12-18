@@ -6,6 +6,7 @@ import { Save, Loader2, Upload, X, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db, COLLECTIONS, SETTINGS_DOC_ID, ProfileSettings } from "@/lib/firebase";
+import toast from "react-hot-toast";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -18,7 +19,17 @@ export default function SettingsPage() {
   const [title, setTitle] = useState("Full Stack Developer");
   const [location, setLocation] = useState("Semarang, Indonesia");
   const [bio, setBio] = useState("");
-  
+  const [heroTagline, setHeroTagline] = useState("");
+  const [bioExtended, setBioExtended] = useState("");
+  const [bioPassion, setBioPassion] = useState("");
+  const [cvUrl, setCvUrl] = useState("");
+
+  // Education state
+  const [eduDegree, setEduDegree] = useState("Informatics / Computer Science");
+  const [eduUniversity, setEduUniversity] = useState("Diponegoro University");
+  const [eduPeriod, setEduPeriod] = useState("2023 - 2027 (Expected)");
+  const [eduCoursework, setEduCoursework] = useState("Data Structures, Software Engineering, Database Systems, Web Development, Mobile Development, Machine Learning");
+
   // Profile images state
   const [heroImage, setHeroImage] = useState<string>("");
   const [aboutImage, setAboutImage] = useState<string>("");
@@ -45,6 +56,17 @@ export default function SettingsPage() {
           setTitle(data.title || "Full Stack Developer");
           setLocation(data.location || "Semarang, Indonesia");
           setBio(data.bio || "");
+          setHeroTagline(data.heroTagline || "");
+          setBioExtended(data.bioExtended || "");
+          setBioPassion(data.bioPassion || "");
+          setCvUrl(data.cvUrl || "");
+          // Education
+          if (data.education) {
+            setEduDegree(data.education.degree || "Informatics / Computer Science");
+            setEduUniversity(data.education.university || "Diponegoro University");
+            setEduPeriod(data.education.period || "2023 - 2027 (Expected)");
+            setEduCoursework(data.education.coursework?.join(", ") || "");
+          }
           setHeroImage(data.heroImage || "");
           setHeroImagePreview(data.heroImage || "");
           setAboutImage(data.aboutImage || "");
@@ -56,6 +78,7 @@ export default function SettingsPage() {
         }
       } catch (error) {
         console.error("Error loading settings:", error);
+        toast.error("Failed to load settings");
       } finally {
         setLoading(false);
       }
@@ -91,7 +114,7 @@ export default function SettingsPage() {
           }
 
           ctx.drawImage(img, 0, 0, width, height);
-          
+
           // Convert to base64 with compression
           const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
           resolve(compressedBase64);
@@ -166,7 +189,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     setSuccessMessage("");
-    
+
     try {
       const docRef = doc(db, COLLECTIONS.SETTINGS, SETTINGS_DOC_ID);
       await setDoc(docRef, {
@@ -174,8 +197,18 @@ export default function SettingsPage() {
         title,
         location,
         bio,
+        heroTagline,
+        bioExtended,
+        bioPassion,
+        cvUrl,
         heroImage,
         aboutImage,
+        education: {
+          degree: eduDegree,
+          university: eduUniversity,
+          period: eduPeriod,
+          coursework: eduCoursework.split(",").map(s => s.trim()).filter(Boolean),
+        },
         socialLinks: {
           github,
           linkedin,
@@ -185,11 +218,13 @@ export default function SettingsPage() {
         },
         updatedAt: serverTimestamp(),
       });
-      
+
       setSuccessMessage("Settings saved successfully!");
+      toast.success("Settings saved successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Error saving settings:", error);
+      toast.error("Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -198,11 +233,11 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 animate-pulse">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
+        <div className="bg-background border border-[var(--border)] rounded-xl shadow-sm p-6 animate-pulse">
+          <div className="h-8 bg-[var(--background-secondary)] rounded w-1/3 mb-6"></div>
           <div className="space-y-4">
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-4 bg-[var(--background-secondary)] rounded w-1/4"></div>
+            <div className="h-10 bg-[var(--background-secondary)] rounded"></div>
           </div>
         </div>
       </div>
@@ -213,10 +248,10 @@ export default function SettingsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Settings
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-[var(--text-muted)] mt-1">
           Manage your portfolio settings and preferences
         </p>
       </div>
@@ -236,9 +271,9 @@ export default function SettingsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 space-y-6"
+        className="bg-background border border-[var(--border)] rounded-xl shadow-sm p-6 space-y-6"
       >
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <ImageIcon className="h-5 w-5" />
           Profile Images
         </h2>
@@ -257,7 +292,7 @@ export default function SettingsPage() {
             >
               {heroImagePreview ? (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src={heroImagePreview}
                     alt="Hero Preview"
@@ -312,7 +347,7 @@ export default function SettingsPage() {
             >
               {aboutImagePreview ? (
                 <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  { }
                   <img
                     src={aboutImagePreview}
                     alt="About Preview"
@@ -361,9 +396,9 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 space-y-6"
+        className="bg-background border border-[var(--border)] rounded-xl shadow-sm p-6 space-y-6"
       >
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-foreground">
           Profile Settings
         </h2>
 
@@ -419,15 +454,135 @@ export default function SettingsPage() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Bio
+            Bio (First paragraph - appears after your name)
           </label>
           <textarea
-            rows={4}
+            rows={3}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell visitors about yourself..."
+            placeholder="an Informatics undergraduate at Diponegoro University. I specialize in..."
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Bio Extended (Second paragraph - experience/background)
+          </label>
+          <textarea
+            rows={3}
+            value={bioExtended}
+            onChange={(e) => setBioExtended(e.target.value)}
+            placeholder="I have hands-on experience as..."
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Bio Passion (Third paragraph - passion/goals)
+          </label>
+          <textarea
+            rows={2}
+            value={bioPassion}
+            onChange={(e) => setBioPassion(e.target.value)}
+            placeholder="I'm passionate about creating impactful digital solutions..."
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Hero Tagline (below your name)
+            </label>
+            <input
+              type="text"
+              value={heroTagline}
+              onChange={(e) => setHeroTagline(e.target.value)}
+              placeholder="Full Stack Developer | UI/UX Enthusiast"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              CV/Resume URL
+            </label>
+            <input
+              type="url"
+              value={cvUrl}
+              onChange={(e) => setCvUrl(e.target.value)}
+              placeholder="https://drive.google.com/..."
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Education Settings */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="bg-background border border-[var(--border)] rounded-xl shadow-sm p-6 space-y-6"
+      >
+        <h2 className="text-lg font-semibold text-foreground">
+          Education
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              University
+            </label>
+            <input
+              type="text"
+              value={eduUniversity}
+              onChange={(e) => setEduUniversity(e.target.value)}
+              placeholder="Diponegoro University"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Degree/Major
+            </label>
+            <input
+              type="text"
+              value={eduDegree}
+              onChange={(e) => setEduDegree(e.target.value)}
+              placeholder="Informatics / Computer Science"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Period
+            </label>
+            <input
+              type="text"
+              value={eduPeriod}
+              onChange={(e) => setEduPeriod(e.target.value)}
+              placeholder="2023 - 2027 (Expected)"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Coursework (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={eduCoursework}
+              onChange={(e) => setEduCoursework(e.target.value)}
+              placeholder="Data Structures, Software Engineering, Database Systems..."
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
       </motion.div>
 
@@ -436,9 +591,9 @@ export default function SettingsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 space-y-6"
+        className="bg-background border border-[var(--border)] rounded-xl shadow-sm p-6 space-y-6"
       >
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-foreground">
           Social Links
         </h2>
 
@@ -502,7 +657,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors disabled:opacity-50"
         >
           {saving ? (
             <Loader2 className="h-5 w-5 animate-spin" />

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -47,6 +49,7 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password);
       router.push("/dashboard");
+      toast.success("Welcome back!");
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message.includes("user-not-found")) {
@@ -58,14 +61,15 @@ export default function LoginPage() {
         } else {
           setLoginError("Login failed. Please check your credentials");
         }
+        toast.error("Login failed");
       }
     }
   };
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#212529] via-[#495057] to-[#6c757d]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background-secondary)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
       </div>
     );
   }
@@ -75,28 +79,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#212529] via-[#495057] to-[#6c757d] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background-secondary)] p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8">
-          {/* Logo */}
+        <div className="bg-background rounded-2xl shadow-2xl border border-[var(--border)] p-8">
           <div className="text-center mb-8">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-              className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl mx-auto flex items-center justify-center mb-4"
+              className="w-16 h-16 bg-foreground rounded-xl mx-auto flex items-center justify-center mb-4"
             >
-              <span className="text-2xl font-bold text-white">D</span>
+              <span className="text-2xl font-bold text-background">D</span>
             </motion.div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Welcome Back
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-[var(--text-muted)] mt-2">
               Sign in to access admin panel
             </p>
           </div>
@@ -106,9 +109,9 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg"
+              className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg"
             >
-              <p className="text-sm text-red-600 dark:text-red-400">{loginError}</p>
+              <p className="text-sm text-red-500">{loginError}</p>
             </motion.div>
           )}
 
@@ -117,16 +120,15 @@ export default function LoginPage() {
             {/* Email field */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <Mail className="h-5 w-5 text-[var(--text-muted)]" />
               </div>
               <input
                 type="email"
                 {...register("email")}
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.email
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-[var(--background-secondary)] text-foreground placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-foreground/30 focus:border-transparent transition-all ${errors.email
+                  ? "border-red-500"
+                  : "border-[var(--border)]"
+                  }`}
                 placeholder="Email address"
               />
               {errors.email && (
@@ -137,22 +139,21 @@ export default function LoginPage() {
             {/* Password field */}
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
+                <Lock className="h-5 w-5 text-[var(--text-muted)]" />
               </div>
               <input
                 type={showPassword ? "text" : "password"}
                 {...register("password")}
-                className={`w-full pl-10 pr-12 py-3 border rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.password
-                    ? "border-red-500"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
+                className={`w-full pl-10 pr-12 py-3 border rounded-lg bg-[var(--background-secondary)] text-foreground placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-foreground/30 focus:border-transparent transition-all ${errors.password
+                  ? "border-red-500"
+                  : "border-[var(--border)]"
+                  }`}
                 placeholder="Password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[var(--text-muted)] hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
@@ -167,9 +168,9 @@ export default function LoginPage() {
                 <input
                   type="checkbox"
                   {...register("rememberMe")}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 rounded border-[var(--border)] text-foreground focus:ring-foreground/30"
                 />
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-[var(--text-muted)]">
                   Remember me
                 </span>
               </label>
@@ -179,7 +180,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 bg-foreground text-background font-medium rounded-lg hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-foreground/30 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
@@ -194,12 +195,12 @@ export default function LoginPage() {
 
           {/* Back to home */}
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
-              className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="text-sm text-[var(--text-muted)] hover:text-foreground transition-colors"
             >
               ← Back to website
-            </a>
+            </Link>
           </div>
         </div>
       </motion.div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,13 +9,14 @@ interface ThemeToggleProps {
   className?: string;
 }
 
+// Hydration-safe mounting detection
+const emptySubscribe = () => () => { };
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export function ThemeToggle({ className = "" }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
 
   if (!mounted) {
     return (

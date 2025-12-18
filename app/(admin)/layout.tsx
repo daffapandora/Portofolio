@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,31 +17,39 @@ import {
   Sun,
   Home,
   ExternalLink,
+  Briefcase,
+  Code2,
+  Award,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Toaster } from "react-hot-toast";
 
 const sidebarLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
+  { href: "/dashboard/experiences", label: "Experiences", icon: Briefcase },
+  { href: "/dashboard/skills", label: "Skills", icon: Code2 },
+  { href: "/dashboard/certifications", label: "Certifications", icon: Award },
   { href: "/dashboard/messages", label: "Messages", icon: MessageSquare },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
+
+// Hydration-safe mounting detection
+const emptySubscribe = () => () => { };
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, logout, isAdmin } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(emptySubscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
     if (!loading && !user && pathname !== "/login") {
@@ -51,8 +59,8 @@ export default function AdminLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
       </div>
     );
   }
@@ -83,7 +91,31 @@ export default function AdminLayout({
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-[var(--background-secondary)]">
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'var(--background)',
+            color: 'var(--foreground)',
+            border: '1px solid var(--border)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10B981',
+              secondary: 'white',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: 'white',
+            },
+          },
+        }}
+      />
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -94,17 +126,16 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-background border-r border-[var(--border)] shadow-lg transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
-        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-          <Link href="/dashboard" className="text-xl font-bold text-blue-600 dark:text-blue-400">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+          <Link href="/dashboard" className="text-xl font-bold text-foreground">
             Admin Panel
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="lg:hidden text-[var(--text-muted)] hover:text-foreground"
           >
             <X size={24} />
           </button>
@@ -114,15 +145,15 @@ export default function AdminLayout({
           {/* Back to Website Link */}
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors mb-4 border border-dashed border-gray-300 dark:border-gray-600"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg text-[var(--text-muted)] hover:bg-[var(--background-secondary)] transition-colors mb-4 border border-dashed border-[var(--border)]"
           >
             <Home size={20} />
             <span>Back to Website</span>
             <ExternalLink size={14} className="ml-auto" />
           </Link>
-          
-          <div className="border-b dark:border-gray-700 mb-4"></div>
-          
+
+          <div className="border-b border-[var(--border)] mb-4"></div>
+
           {sidebarLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
@@ -130,11 +161,10 @@ export default function AdminLayout({
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                    : "text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                  ? "bg-foreground/10 text-foreground font-medium"
+                  : "text-[var(--text-muted)] hover:bg-[var(--background-secondary)] hover:text-foreground"
+                  }`}
               >
                 <Icon size={20} />
                 {link.label}
@@ -143,10 +173,10 @@ export default function AdminLayout({
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t dark:border-gray-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[var(--border)]">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+            className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
           >
             <LogOut size={20} />
             Logout
@@ -157,12 +187,12 @@ export default function AdminLayout({
       {/* Main content */}
       <div className="lg:ml-64">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white dark:bg-gray-800 shadow-sm">
+        <header className="sticky top-0 z-30 bg-background border-b border-[var(--border)]">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="lg:hidden text-[var(--text-muted)] hover:text-foreground"
               >
                 <Menu size={24} />
               </button>
@@ -194,7 +224,7 @@ export default function AdminLayout({
               {mounted && (
                 <button
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 text-[var(--text-muted)] hover:text-foreground rounded-lg hover:bg-[var(--background-secondary)]"
                 >
                   {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
                 </button>
@@ -202,10 +232,10 @@ export default function AdminLayout({
 
               {/* User menu */}
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
+                <div className="w-8 h-8 rounded-full bg-foreground flex items-center justify-center text-background font-medium">
                   {user.email?.charAt(0).toUpperCase()}
                 </div>
-                <span className="hidden md:block text-sm text-gray-700 dark:text-gray-300">
+                <span className="hidden md:block text-sm text-foreground">
                   {user.email}
                 </span>
               </div>
